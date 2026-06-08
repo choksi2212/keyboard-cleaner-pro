@@ -1,14 +1,13 @@
-using System.Runtime.InteropServices;
-using KeyboardCleanerPro.Core.Infrastructure.Native;
 using KeyboardCleanerPro.Core.Models;
 using KeyboardCleanerPro.Core.Services.Logging;
-using static KeyboardCleanerPro.Core.Infrastructure.Native.NativeStructures;
 
 namespace KeyboardCleanerPro.Core.Services.Control;
 
 /// <summary>
-/// Implements keyboard enable/disable by calling SetupDiCallClassInstaller with
-/// DIF_PROPERTYCHANGE — the same mechanism used by Device Manager.
+/// Implements keyboard enable/disable via cfgmgr32 CM_Disable_DevNode /
+/// CM_Enable_DevNode — the same mechanism Windows Device Manager uses.
+/// This replaces the SetupDiCallClassInstaller approach which fails on
+/// some PS/2 and ACPI keyboard drivers (SPAPI error 0xE0000231).
 /// Requires the process to be elevated (Administrator).
 /// </summary>
 public sealed class DeviceControlService : IDeviceControlService
@@ -22,124 +21,60 @@ public sealed class DeviceControlService : IDeviceControlService
 
     /// <inheritdoc />
     public OperationResult DisableDevice(string deviceInstanceId) =>
-        ChangeDeviceState(deviceInstanceId, NativeConstants.DICS_DISABLE, "DisableDevice");
+        ChangeDeviceState(deviceInstanceId, disable: true);
 
     /// <inheritdoc />
     public OperationResult EnableDevice(string deviceInstanceId) =>
-        ChangeDeviceState(deviceInstanceId, NativeConstants.DICS_ENABLE, "EnableDevice");
+        ChangeDeviceState(deviceInstanceId, disable: false);
 
-    // ── Core state-change implementation ──────────────────────────────────────
+    // ── Core implementation ────────────────────────────────────────────────────
 
-    private OperationResult ChangeDeviceState(string deviceInstanceId, uint desiredState, string operationName)
+    private OperationResult ChangeDeviceState(string deviceInstanceId, bool disable)
     {
         ArgumentException.ThrowIfNullOrEmpty(deviceInstanceId);
 
-        // Use DIGCF_ALLCLASSES (no GUID, no DIGCF_PRESENT) so we enumerate
-        // ALL devices including currently-disabled ones. A disabled keyboard
-        // won't appear with DIGCF_PRESENT so re-enable would always fail.
-        IntPtr deviceInfoSet = SetupApiNative.SetupDiGetClassDevs(
-            IntPtr.Zero,
-            null,
-            IntPtr.Zero,
-            NativeConstants.DIGCF_ALLCLASSES);
+        string operationName = disable ? "DisableDevice" : "EnableDevice";
 
-        if (deviceInfoSet == new IntPtr(-1))
+        // Step 1 — Locate the device node by instance ID.
+        // CM_LOCATE_DEVNODE_NORMAL finds only present (running or stopped) devices.
+        // CM_LOCATE_DEVNODE_PHANTOM also finds absent/disabled devices — needed
+        // so that re-enable works even after the device has been software-disabled.
+        uint locateFlags = disable
+            ? Infrastructure.Native.CfgMgrNative.CM_LOCATE_DEVNODE_NORMAL
+            : Infrastructure.Native.CfgMgrNative.CM_LOCATE_DEVNODE_PHANTOM;
+
+        uint cr = Infrastructure.Native.CfgMgrNative.CM_Locate_DevNodeW(
+            out uint devInst, deviceInstanceId, locateFlags);
+
+        if (cr != Infrastructure.Native.CfgMgrNative.CR_SUCCESS)
         {
-            int err = Marshal.GetLastWin32Error();
-            _logger.Log(operationName, deviceInstanceId, "GetClassDevsFailed", err, Environment.UserName);
-            return OperationResult.Failure($"SetupDiGetClassDevs failed (Win32={err}).", err);
+            _logger.Log(operationName, deviceInstanceId, "CM_Locate_DevNode failed", (int)cr, Environment.UserName);
+            return OperationResult.Failure(
+                $"Could not locate device '{deviceInstanceId}'. ConfigMgr result = 0x{cr:X8}.", (int)cr);
         }
 
-        try
+        // Step 2 — Disable or enable.
+        if (disable)
         {
-            return FindAndChangeDevice(deviceInfoSet, deviceInstanceId, desiredState, operationName);
+            // CM_DISABLE_UI_NOT_OK suppresses any UI dialog Device Manager would show
+            cr = Infrastructure.Native.CfgMgrNative.CM_Disable_DevNode(
+                devInst, Infrastructure.Native.CfgMgrNative.CM_DISABLE_UI_NOT_OK);
         }
-        finally
+        else
         {
-            SetupApiNative.SetupDiDestroyDeviceInfoList(deviceInfoSet);
-        }
-    }
-
-    private OperationResult FindAndChangeDevice(
-        IntPtr  deviceInfoSet,
-        string  targetInstanceId,
-        uint    desiredState,
-        string  operationName)
-    {
-        var devInfoData = CreateDevInfoData();
-        uint index = 0;
-
-        while (SetupApiNative.SetupDiEnumDeviceInfo(deviceInfoSet, index, ref devInfoData))
-        {
-            string currentId = ReadInstanceId(deviceInfoSet, ref devInfoData);
-            if (string.Equals(currentId, targetInstanceId, StringComparison.OrdinalIgnoreCase))
-                return ApplyStateChange(deviceInfoSet, ref devInfoData, desiredState, targetInstanceId, operationName);
-
-            index++;
-            devInfoData = CreateDevInfoData();
+            cr = Infrastructure.Native.CfgMgrNative.CM_Enable_DevNode(devInst, 0);
         }
 
-        _logger.Log(operationName, targetInstanceId, "DeviceNotFound", NativeConstants.ERROR_NOT_FOUND, Environment.UserName);
-        return OperationResult.Failure(
-            $"Device '{targetInstanceId}' was not found in the keyboard device class.",
-            NativeConstants.ERROR_NOT_FOUND);
-    }
-
-    private OperationResult ApplyStateChange(
-        IntPtr              deviceInfoSet,
-        ref SP_DEVINFO_DATA devInfoData,
-        uint                desiredState,
-        string              instanceId,
-        string              operationName)
-    {
-        var propChangeParams = new SP_PROPCHANGE_PARAMS
+        if (cr != Infrastructure.Native.CfgMgrNative.CR_SUCCESS)
         {
-            ClassInstallHeader = new SP_CLASSINSTALL_HEADER
-            {
-                cbSize          = (uint)Marshal.SizeOf<SP_CLASSINSTALL_HEADER>(),
-                InstallFunction = NativeConstants.DIF_PROPERTYCHANGE
-            },
-            StateChange = desiredState,
-            Scope       = NativeConstants.DICS_FLAG_GLOBAL,
-            HwProfile   = 0
-        };
-
-        if (!SetupApiNative.SetupDiSetClassInstallParams(
-                deviceInfoSet,
-                ref devInfoData,
-                ref propChangeParams,
-                (uint)Marshal.SizeOf<SP_PROPCHANGE_PARAMS>()))
-        {
-            int err = Marshal.GetLastWin32Error();
-            _logger.Log(operationName, instanceId, "SetClassInstallParamsFailed", err, Environment.UserName);
-            return OperationResult.Failure($"SetupDiSetClassInstallParams failed (Win32={err}).", err);
+            string action = disable ? "CM_Disable_DevNode" : "CM_Enable_DevNode";
+            _logger.Log(operationName, deviceInstanceId, $"{action} failed", (int)cr, Environment.UserName);
+            return OperationResult.Failure(
+                $"{action} failed. ConfigMgr result = 0x{cr:X8}.", (int)cr);
         }
 
-        if (!SetupApiNative.SetupDiCallClassInstaller(
-                NativeConstants.DIF_PROPERTYCHANGE,
-                deviceInfoSet,
-                ref devInfoData))
-        {
-            int err = Marshal.GetLastWin32Error();
-            _logger.Log(operationName, instanceId, "CallClassInstallerFailed", err, Environment.UserName);
-            return OperationResult.Failure($"SetupDiCallClassInstaller failed (Win32={err}).", err);
-        }
-
-        string action = desiredState == NativeConstants.DICS_DISABLE ? "Disabled" : "Enabled";
-        _logger.Log(operationName, instanceId, action, null, Environment.UserName);
+        string done = disable ? "Disabled" : "Enabled";
+        _logger.Log(operationName, deviceInstanceId, done, null, Environment.UserName);
         return OperationResult.Success();
-    }
-
-    // ── Helpers ───────────────────────────────────────────────────────────────
-
-    private static SP_DEVINFO_DATA CreateDevInfoData() =>
-        new() { cbSize = (uint)Marshal.SizeOf<SP_DEVINFO_DATA>() };
-
-    private static string ReadInstanceId(IntPtr devInfoSet, ref SP_DEVINFO_DATA devInfoData)
-    {
-        var buffer = new char[NativeConstants.BUFFER_SIZE_SMALL];
-        return SetupApiNative.SetupDiGetDeviceInstanceId(devInfoSet, ref devInfoData, buffer, (uint)buffer.Length, out _)
-            ? new string(buffer).TrimEnd('\0')
-            : string.Empty;
     }
 }
