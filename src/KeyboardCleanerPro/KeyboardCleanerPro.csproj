@@ -26,4 +26,10 @@
     <ProjectReference Include="..\KeyboardCleanerPro.Core\KeyboardCleanerPro.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- App icon (taskbar, Alt+Tab, window chrome) -->
+    <ApplicationDefinition Update="App.xaml" />
+    <Resource Include="Resources\logo.png" />
+  </ItemGroup>
+
 </Project>

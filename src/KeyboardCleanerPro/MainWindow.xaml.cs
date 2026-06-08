@@ -15,7 +15,10 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        MouseLeftButtonDown += (_, _) => DragMove(); // allow drag from anywhere
+
+        // Only drag when the mouse is pressed on the title bar area (Grid Row 0),
+        // NOT from the content area — otherwise DragMove() swallows button clicks.
+        TitleBar.MouseLeftButtonDown += (_, _) => DragMove();
     }
 
     private void MinimizeButton_Click(object sender, RoutedEventArgs e) =>
@@ -23,10 +26,8 @@ public partial class MainWindow : Window
 
     private void CloseButton_Click(object sender, RoutedEventArgs e)
     {
-        // Tell the ViewModel to clean up (cancel timer, ensure keyboard is enabled)
         if (DataContext is ViewModels.MainViewModel vm)
             vm.OnWindowClosing();
-
         Close();
     }
 
