@@ -182,9 +182,9 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
         });
     }
 
-    private async Task DisableAsync()
+    private Task DisableAsync()
     {
-        if (_detectedDevice is null) return;
+        if (_detectedDevice is null) return Task.CompletedTask;
 
         SetState(AppState.Disabling);
         ErrorMessage = null;
@@ -200,7 +200,10 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
             AppVersion         = "1.0.0"
         });
 
-        var result = await Task.Run(() => _controlService.DisableDevice(instanceId));
+        // IMPORTANT: DisableDevice (keyboard hook) MUST be called on the UI/dispatcher
+        // thread so the hook callback is delivered via WPF's message pump.
+        // Hook installation is instant — no need for Task.Run.
+        var result = _controlService.DisableDevice(instanceId);
 
         if (result.IsSuccess)
         {
@@ -221,7 +224,6 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
         }
         else
         {
-            // Roll back persisted state since disable failed
             _stateManager.ClearState();
             string msg = $"Could not lock keyboard:\n{result.ErrorMessage}";
             ErrorMessage = msg;
@@ -229,11 +231,13 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
             MessageBox.Show(msg, "Keyboard Cleaner Pro — Error",
                 MessageBoxButton.OK, MessageBoxImage.Error);
         }
+
+        return Task.CompletedTask;
     }
 
-    private async Task EnableAsync()
+    private Task EnableAsync()
     {
-        if (_detectedDevice is null) return;
+        if (_detectedDevice is null) return Task.CompletedTask;
 
         SetState(AppState.Enabling);
         ErrorMessage = null;
@@ -242,7 +246,8 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
         _recoveryService.CancelAutoRestoreTimer();
         OnPropertyChanged(nameof(IsTimerActive));
 
-        var result = await Task.Run(() => _controlService.EnableDevice(instanceId));
+        // Hook removal is instant and thread-safe
+        var result = _controlService.EnableDevice(instanceId);
 
         if (result.IsSuccess)
         {
@@ -254,13 +259,13 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
         {
             string msg = $"Could not unlock keyboard:\n{result.ErrorMessage}";
             ErrorMessage = msg;
-            // Keyboard may still be disabled — stay in disabled state so user can retry
             SetState(AppState.KeyboardDisabled);
             MessageBox.Show(msg, "Keyboard Cleaner Pro — Error",
                 MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
         RemainingTime = null;
+        return Task.CompletedTask;
     }
 
     // ── Cleanup ───────────────────────────────────────────────────────────────

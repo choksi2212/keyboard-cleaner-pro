@@ -45,20 +45,21 @@ public partial class App : Application
         var stateManager     = new StateManager(DataDirectory);
         var scorer           = new DeviceScorer();
         var detectionService = new KeyboardDetectionService(scorer, logger);
-        var controlService   = new DeviceControlService(logger);
+        var controlService   = new KeyboardHookControlService(logger);   // WH_KEYBOARD_LL hook
         var taskManager      = new ScheduledTaskManager();
         var recoveryService  = new RecoveryService(logger, taskManager);
 
         var settings = configService.Load();
 
         // ── Check startup recovery (Method B — app relaunch after crash) ─────
+        // With the hook-based approach, a crash automatically removes the hook
+        // (Windows cleans up hooks when the process dies). However we still
+        // clear any leftover persisted state so the UI starts fresh.
         var savedState = stateManager.LoadState();
         if (savedState is { IsKeyboardDisabled: true })
         {
-            logger.Log("StartupRecovery", savedState.DeviceInstanceId, "RecoveringAfterCrash", null, Environment.UserName);
-            var restoreResult = controlService.EnableDevice(savedState.DeviceInstanceId);
-            if (restoreResult.IsSuccess)
-                stateManager.ClearState();
+            logger.Log("StartupRecovery", savedState.DeviceInstanceId, "ClearingStaleState-HookAutoReleased", null, Environment.UserName);
+            stateManager.ClearState(); // Hook was already released when process died
         }
 
         var viewModel = new ViewModels.MainViewModel(
