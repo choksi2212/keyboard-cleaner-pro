@@ -66,6 +66,7 @@ public partial class App : Application
             stateManager, configService, logger);
 
         var mainWindow = new MainWindow { DataContext = viewModel };
+        MainWindow = mainWindow;
         mainWindow.Show();
     }
 

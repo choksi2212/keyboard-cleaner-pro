@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Keyboard Cleaner Pro — WiX v4 MSI Installer
+  Produces a per-machine, x64 installer with:
+    - Program Files installation
+    - Start Menu shortcut
+    - Desktop shortcut (optional)
+    - Automatic uninstaller registration
+    - UAC admin requirement enforced by the app manifest
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+
+  <Package Name="Keyboard Cleaner Pro"
+           Manufacturer="Manas Choksi"
+           Version="1.0.0.0"
+           UpgradeCode="A1B2C3D4-CAFE-BEEF-DEAD-000000000001"
+           Language="1033"
+           Codepage="1252"
+           InstallerVersion="500"
+           Scope="perMachine">
+
+    <!-- Allow major upgrades (uninstall old, install new) -->
+    <MajorUpgrade DowngradeErrorMessage="A newer version of Keyboard Cleaner Pro is already installed." />
+
+    <!-- Media — embed all files into the MSI cabinet -->
+    <MediaTemplate EmbedCab="yes" />
+
+    <!-- ── UI — standard WiX install wizard ─────────────────────── -->
+    <ui:WixUI Id="WixUI_InstallDir" />
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+
+    <!-- Suppress licence dialog (no separate EULA for this app) -->
+    <WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
+
+    <!-- ── Directory structure ──────────────────────────────────── -->
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="Keyboard Cleaner Pro" />
+    </StandardDirectory>
+
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="ApplicationProgramsFolder" Name="Keyboard Cleaner Pro" />
+    </StandardDirectory>
+
+    <StandardDirectory Id="DesktopFolder" />
+
+    <!-- ── Files ────────────────────────────────────────────────── -->
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+
+      <!-- Main executable -->
+      <Component Id="MainExecutable" Guid="A1B2C3D4-0001-0001-0001-100000000001">
+        <File Id="KeyboardCleanerProExe"
+              Source="$(var.PublishDir)\KeyboardCleanerPro.exe"
+              KeyPath="yes"
+              Checksum="yes" />
+      </Component>
+
+      <!-- Start Menu shortcut -->
+      <Component Id="StartMenuShortcut" Guid="A1B2C3D4-0001-0001-0001-200000000002"
+                 Directory="ApplicationProgramsFolder">
+        <Shortcut Id="StartMenuShortcutLink"
+                  Name="Keyboard Cleaner Pro"
+                  Description="Lock your laptop keyboard while cleaning it"
+                  Target="[INSTALLFOLDER]KeyboardCleanerPro.exe"
+                  WorkingDirectory="INSTALLFOLDER" />
+        <RemoveFolder Id="RemoveApplicationProgramsFolder"
+                      Directory="ApplicationProgramsFolder"
+                      On="uninstall" />
+        <RegistryValue Root="HKCU"
+                       Key="Software\ManasChoksi\KeyboardCleanerPro"
+                       Name="StartMenuShortcut"
+                       Type="integer" Value="1"
+                       KeyPath="yes" />
+      </Component>
+
+      <!-- Desktop shortcut -->
+      <Component Id="DesktopShortcut" Guid="A1B2C3D4-0001-0001-0001-300000000003"
+                 Directory="DesktopFolder">
+        <Shortcut Id="DesktopShortcutLink"
+                  Name="Keyboard Cleaner Pro"
+                  Description="Lock your laptop keyboard while cleaning it"
+                  Target="[INSTALLFOLDER]KeyboardCleanerPro.exe"
+                  WorkingDirectory="INSTALLFOLDER" />
+        <RegistryValue Root="HKCU"
+                       Key="Software\ManasChoksi\KeyboardCleanerPro"
+                       Name="DesktopShortcut"
+                       Type="integer" Value="1"
+                       KeyPath="yes" />
+      </Component>
+
+    </ComponentGroup>
+
+    <!-- ── Feature ───────────────────────────────────────────────── -->
+    <Feature Id="ProductFeature" Title="Keyboard Cleaner Pro" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+    </Feature>
+
+  </Package>
+</Wix>

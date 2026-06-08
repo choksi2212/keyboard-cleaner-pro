@@ -163,19 +163,23 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
 
         var result = await Task.Run(_detectionService.DetectInternalKeyboard);
 
-        if (result.IsSuccess)
+        // All UI updates must happen on the dispatcher thread
+        Application.Current.Dispatcher.Invoke(() =>
         {
-            _detectedDevice = result.Value;
-            OnPropertyChanged(nameof(DeviceName));
-            OnPropertyChanged(nameof(ConnectionType));
-            OnPropertyChanged(nameof(DeviceDetected));
-            SetState(AppState.KeyboardEnabled);
-        }
-        else
-        {
-            ErrorMessage = result.ErrorMessage;
-            SetState(AppState.Error);
-        }
+            if (result.IsSuccess)
+            {
+                _detectedDevice = result.Value;
+                OnPropertyChanged(nameof(DeviceName));
+                OnPropertyChanged(nameof(ConnectionType));
+                OnPropertyChanged(nameof(DeviceDetected));
+                SetState(AppState.KeyboardEnabled);
+            }
+            else
+            {
+                ErrorMessage = result.ErrorMessage;
+                SetState(AppState.Error);
+            }
+        });
     }
 
     private async Task DisableAsync()
@@ -273,11 +277,22 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
 
     private void SetState(AppState state)
     {
-        Application.Current.Dispatcher.InvokeAsync(() =>
+        // Use synchronous Invoke so CanToggle is updated before any
+        // subsequent CanExecute check fires — avoids the race where the
+        // button appears enabled while a transition is still in flight.
+        if (Application.Current.Dispatcher.CheckAccess())
         {
             CurrentState = state;
             RelayCommand.RaiseCanExecuteChanged();
-        });
+        }
+        else
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                CurrentState = state;
+                RelayCommand.RaiseCanExecuteChanged();
+            });
+        }
     }
 
     private void RefreshCountdown()
@@ -321,4 +336,10 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
 }
 
 /// <summary>A timer duration option shown in the dropdown.</summary>
-public sealed record TimerOption(int Minutes, string Display);
+public sealed record TimerOption(int Minutes, string Display)
+{
+    // Override ToString so the WPF ContentPresenter inside the custom
+    // ComboBox template renders the friendly display text, not the
+    // default record representation ("TimerOption { Minutes = 5, … }")
+    public override string ToString() => Display;
+}

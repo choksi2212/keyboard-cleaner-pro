@@ -43,5 +43,10 @@ coverage/
 *.trx
 *.coveragexml
 
-## Publish output
+## Publish output (all versioned publish folders)
 publish/
+publish-*/
+
+## Installer build artifacts (source .wxs stays, binaries don't)
+installer/*.msi
+installer/*.wixpdb

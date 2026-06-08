@@ -112,7 +112,21 @@ public sealed class LoggingServiceTests : IDisposable
     public void Dispose()
     {
         _sut.Dispose();
-        if (Directory.Exists(_tempDir))
-            Directory.Delete(_tempDir, recursive: true);
+
+        // The LoggingService writes asynchronously; retry the delete a few times
+        // to handle the file-lock race between the writer and teardown.
+        for (int attempt = 0; attempt < 5; attempt++)
+        {
+            try
+            {
+                if (Directory.Exists(_tempDir))
+                    Directory.Delete(_tempDir, recursive: true);
+                break;
+            }
+            catch (IOException)
+            {
+                Thread.Sleep(100);
+            }
+        }
     }
 }
