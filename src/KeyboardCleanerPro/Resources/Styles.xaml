@@ -2,33 +2,43 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
   <!-- ══════════════════════════════════════════════════════
-       COLOUR PALETTE  (literal hex — no Color StaticResource on SolidColorBrush)
+       COLOUR SYSTEM — Pure Dark Aesthetic
+       No purple, no blue-violet gradients.
+       Palette: near-black surfaces + green/red semantics + off-white text.
   ══════════════════════════════════════════════════════ -->
-  <SolidColorBrush x:Key="BrushBgDeep"        Color="#FF0D0D1A" />
-  <SolidColorBrush x:Key="BrushBgSurface"     Color="#FF15152A" />
-  <SolidColorBrush x:Key="BrushBgCard"        Color="#FF1E1E38" />
-  <SolidColorBrush x:Key="BrushBorder"        Color="#FF2A2A4A" />
-  <SolidColorBrush x:Key="BrushAccent"        Color="#FF4FC3F7" />
-  <SolidColorBrush x:Key="BrushSuccess"       Color="#FF4CAF50" />
-  <SolidColorBrush x:Key="BrushDanger"        Color="#FFEF5350" />
-  <SolidColorBrush x:Key="BrushTextPrimary"   Color="#FFFFFFFF" />
-  <SolidColorBrush x:Key="BrushTextSecondary" Color="#FF8B8FAB" />
-  <SolidColorBrush x:Key="BrushTextMuted"     Color="#FF555577" />
 
-  <!-- Gradients -->
-  <LinearGradientBrush x:Key="BrushAccentGrad" StartPoint="0,0" EndPoint="1,1">
-    <GradientStop Color="#FF4FC3F7" Offset="0" />
-    <GradientStop Color="#FF7C4DFF" Offset="1" />
-  </LinearGradientBrush>
+  <!-- Surfaces -->
+  <SolidColorBrush x:Key="BrushBgDeep"        Color="#FF080808" />
+  <SolidColorBrush x:Key="BrushBgSurface"     Color="#FF101010" />
+  <SolidColorBrush x:Key="BrushBgCard"        Color="#FF181818" />
+  <SolidColorBrush x:Key="BrushBorder"        Color="#FF282828" />
+  <SolidColorBrush x:Key="BrushBorderHover"   Color="#FF3C3C3C" />
 
-  <LinearGradientBrush x:Key="BrushDangerGrad" StartPoint="0,0" EndPoint="1,1">
-    <GradientStop Color="#FFEF5350" Offset="0" />
-    <GradientStop Color="#FFFF7043" Offset="1" />
-  </LinearGradientBrush>
+  <!-- Semantics — green = active/good, red = locked/danger -->
+  <SolidColorBrush x:Key="BrushGreen"         Color="#FF22C55E" />
+  <SolidColorBrush x:Key="BrushRed"           Color="#FFEF4444" />
+  <SolidColorBrush x:Key="BrushAmber"         Color="#FFF59E0B" />
 
+  <!-- Text hierarchy -->
+  <SolidColorBrush x:Key="BrushTextPrimary"   Color="#FFF5F5F5" />
+  <SolidColorBrush x:Key="BrushTextSecondary" Color="#FF8A8A8A" />
+  <SolidColorBrush x:Key="BrushTextMuted"     Color="#FF484848" />
+
+  <!-- Aliases for legacy references -->
+  <SolidColorBrush x:Key="BrushAccent"        Color="#FF22C55E" />
+  <SolidColorBrush x:Key="BrushSuccess"       Color="#FF22C55E" />
+  <SolidColorBrush x:Key="BrushDanger"        Color="#FFEF4444" />
+
+  <!-- Header gradient — just dark to slightly less dark -->
   <LinearGradientBrush x:Key="BrushHeaderGrad" StartPoint="0,0" EndPoint="0,1">
-    <GradientStop Color="#FF0D0D1A" Offset="0" />
-    <GradientStop Color="#FF15152A" Offset="1" />
+    <GradientStop Color="#FF060606" Offset="0" />
+    <GradientStop Color="#FF111111" Offset="1" />
+  </LinearGradientBrush>
+
+  <!-- Subtle card gradient — gives depth without colour -->
+  <LinearGradientBrush x:Key="BrushCardGrad" StartPoint="0,0" EndPoint="0,1">
+    <GradientStop Color="#FF1E1E1E" Offset="0" />
+    <GradientStop Color="#FF141414" Offset="1" />
   </LinearGradientBrush>
 
   <!-- ══════════════════════════════════════════════════════
@@ -37,7 +47,7 @@
   <FontFamily x:Key="FontUI">Segoe UI, Segoe UI Variable Display, Arial</FontFamily>
 
   <!-- ══════════════════════════════════════════════════════
-       WINDOW CHROME BUTTON STYLE
+       WINDOW CHROME BUTTONS
   ══════════════════════════════════════════════════════ -->
   <Style x:Key="ChromeButton" TargetType="Button">
     <Setter Property="Width"           Value="40" />
@@ -57,11 +67,11 @@
           </Border>
           <ControlTemplate.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-              <Setter TargetName="Bd" Property="Background" Value="#22FFFFFF" />
+              <Setter TargetName="Bd" Property="Background" Value="#FF202020" />
               <Setter Property="Foreground" Value="{StaticResource BrushTextPrimary}" />
             </Trigger>
             <Trigger Property="IsPressed" Value="True">
-              <Setter TargetName="Bd" Property="Background" Value="#44FFFFFF" />
+              <Setter TargetName="Bd" Property="Background" Value="#FF2C2C2C" />
             </Trigger>
           </ControlTemplate.Triggers>
         </ControlTemplate>
@@ -72,18 +82,19 @@
   <Style x:Key="ChromeCloseButton" TargetType="Button" BasedOn="{StaticResource ChromeButton}">
     <Style.Triggers>
       <Trigger Property="IsMouseOver" Value="True">
-        <Setter Property="Background" Value="#FFE81123" />
-        <Setter Property="Foreground" Value="White" />
+        <Setter Property="Background" Value="#FFB91C1C" />
+        <Setter Property="Foreground" Value="#FFF5F5F5" />
       </Trigger>
     </Style.Triggers>
   </Style>
 
   <!-- ══════════════════════════════════════════════════════
-       TOGGLE BUTTON — ENABLED STATE (Blue)
+       MAIN TOGGLE BUTTON — ENABLED STATE
+       Dark charcoal face, green glow ring only.
   ══════════════════════════════════════════════════════ -->
   <Style x:Key="MainToggleButton" TargetType="Button">
-    <Setter Property="Width"           Value="160" />
-    <Setter Property="Height"          Value="160" />
+    <Setter Property="Width"           Value="152" />
+    <Setter Property="Height"          Value="152" />
     <Setter Property="Cursor"          Value="Hand" />
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="FontFamily"      Value="{StaticResource FontUI}" />
@@ -91,48 +102,61 @@
       <Setter.Value>
         <ControlTemplate TargetType="Button">
           <Grid>
-            <!-- Outer glow ring -->
-            <Ellipse x:Name="GlowRing" Width="160" Height="160" Opacity="0">
+            <!-- Outer glow — green, soft -->
+            <Ellipse x:Name="GlowRing" Width="152" Height="152" Opacity="0">
               <Ellipse.Fill>
                 <RadialGradientBrush>
-                  <GradientStop Color="#664FC3F7" Offset="0.6" />
+                  <GradientStop Color="#4422C55E" Offset="0.55" />
                   <GradientStop Color="Transparent" Offset="1.0" />
                 </RadialGradientBrush>
               </Ellipse.Fill>
             </Ellipse>
-            <!-- Button face -->
-            <Ellipse x:Name="BtnFace" Width="140" Height="140"
-                     HorizontalAlignment="Center" VerticalAlignment="Center">
+
+            <!-- Outer border ring -->
+            <Ellipse x:Name="Ring" Width="140" Height="140"
+                     HorizontalAlignment="Center" VerticalAlignment="Center"
+                     StrokeThickness="1.5">
+              <Ellipse.Stroke>
+                <SolidColorBrush Color="#FF2C2C2C" />
+              </Ellipse.Stroke>
               <Ellipse.Fill>
-                <LinearGradientBrush StartPoint="0.2,0" EndPoint="0.8,1">
-                  <GradientStop Color="#FF4FC3F7" Offset="0" />
-                  <GradientStop Color="#FF7C4DFF" Offset="1" />
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                  <GradientStop Color="#FF1E1E1E" Offset="0" />
+                  <GradientStop Color="#FF141414" Offset="1" />
                 </LinearGradientBrush>
               </Ellipse.Fill>
               <Ellipse.Effect>
-                <DropShadowEffect Color="#FF4FC3F7" BlurRadius="24" ShadowDepth="0" Opacity="0.5" />
+                <DropShadowEffect Color="#FF22C55E" BlurRadius="22"
+                                  ShadowDepth="0" Opacity="0.18" />
               </Ellipse.Effect>
             </Ellipse>
-            <!-- Icon + label -->
+
+            <!-- Content -->
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-              <TextBlock Text="⌨" FontSize="36"
+              <TextBlock Text="⌨" FontSize="34"
                          HorizontalAlignment="Center"
-                         Foreground="White" Margin="0,0,0,6" />
+                         Foreground="#FFF5F5F5" Margin="0,0,0,8" />
               <TextBlock Text="{TemplateBinding Content}"
-                         FontSize="11" FontWeight="SemiBold"
+                         FontSize="10" FontWeight="SemiBold"
                          HorizontalAlignment="Center"
-                         Foreground="#DDFFFFFF" />
+                         Foreground="{StaticResource BrushTextSecondary}" />
             </StackPanel>
           </Grid>
+
           <ControlTemplate.Triggers>
+            <!-- Hover: show green glow ring, accent ring border -->
             <Trigger Property="IsMouseOver" Value="True">
               <Setter TargetName="GlowRing" Property="Opacity" Value="1" />
-              <Setter TargetName="BtnFace" Property="Width"  Value="144" />
-              <Setter TargetName="BtnFace" Property="Height" Value="144" />
+              <Setter TargetName="Ring" Property="Stroke">
+                <Setter.Value>
+                  <SolidColorBrush Color="#FF22C55E" />
+                </Setter.Value>
+              </Setter>
             </Trigger>
+            <!-- Pressed: shrink slightly -->
             <Trigger Property="IsPressed" Value="True">
-              <Setter TargetName="BtnFace" Property="Width"  Value="132" />
-              <Setter TargetName="BtnFace" Property="Height" Value="132" />
+              <Setter TargetName="Ring" Property="Width"  Value="132" />
+              <Setter TargetName="Ring" Property="Height" Value="132" />
             </Trigger>
           </ControlTemplate.Triggers>
         </ControlTemplate>
@@ -141,11 +165,12 @@
   </Style>
 
   <!-- ══════════════════════════════════════════════════════
-       TOGGLE BUTTON — DISABLED/LOCKED STATE (Red)
+       MAIN TOGGLE BUTTON — LOCKED STATE
+       Same dark face, but red glow + red ring accent.
   ══════════════════════════════════════════════════════ -->
   <Style x:Key="MainToggleButtonDanger" TargetType="Button">
-    <Setter Property="Width"           Value="160" />
-    <Setter Property="Height"          Value="160" />
+    <Setter Property="Width"           Value="152" />
+    <Setter Property="Height"          Value="152" />
     <Setter Property="Cursor"          Value="Hand" />
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="FontFamily"      Value="{StaticResource FontUI}" />
@@ -153,43 +178,54 @@
       <Setter.Value>
         <ControlTemplate TargetType="Button">
           <Grid>
-            <Ellipse x:Name="GlowRing" Width="160" Height="160" Opacity="0.6">
+            <!-- Outer glow — red -->
+            <Ellipse x:Name="GlowRing" Width="152" Height="152" Opacity="0.7">
               <Ellipse.Fill>
                 <RadialGradientBrush>
-                  <GradientStop Color="#66EF5350" Offset="0.6" />
+                  <GradientStop Color="#44EF4444" Offset="0.55" />
                   <GradientStop Color="Transparent" Offset="1.0" />
                 </RadialGradientBrush>
               </Ellipse.Fill>
             </Ellipse>
-            <Ellipse x:Name="BtnFace" Width="140" Height="140"
-                     HorizontalAlignment="Center" VerticalAlignment="Center">
+
+            <!-- Dark face, red ring border -->
+            <Ellipse x:Name="Ring" Width="140" Height="140"
+                     HorizontalAlignment="Center" VerticalAlignment="Center"
+                     StrokeThickness="1.5">
+              <Ellipse.Stroke>
+                <SolidColorBrush Color="#FFEF4444" />
+              </Ellipse.Stroke>
               <Ellipse.Fill>
-                <LinearGradientBrush StartPoint="0.2,0" EndPoint="0.8,1">
-                  <GradientStop Color="#FFEF5350" Offset="0" />
-                  <GradientStop Color="#FFFF7043" Offset="1" />
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                  <GradientStop Color="#FF1E1E1E" Offset="0" />
+                  <GradientStop Color="#FF141414" Offset="1" />
                 </LinearGradientBrush>
               </Ellipse.Fill>
               <Ellipse.Effect>
-                <DropShadowEffect Color="#FFEF5350" BlurRadius="28" ShadowDepth="0" Opacity="0.65" />
+                <DropShadowEffect Color="#FFEF4444" BlurRadius="26"
+                                  ShadowDepth="0" Opacity="0.32" />
               </Ellipse.Effect>
             </Ellipse>
+
+            <!-- Content -->
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-              <TextBlock Text="&#128274;" FontSize="32"
+              <TextBlock Text="&#128274;" FontSize="30"
                          HorizontalAlignment="Center"
-                         Foreground="White" Margin="0,0,0,6" />
+                         Foreground="#FFF5F5F5" Margin="0,0,0,8" />
               <TextBlock Text="{TemplateBinding Content}"
-                         FontSize="11" FontWeight="SemiBold"
+                         FontSize="10" FontWeight="SemiBold"
                          HorizontalAlignment="Center"
-                         Foreground="#DDFFFFFF" />
+                         Foreground="{StaticResource BrushTextSecondary}" />
             </StackPanel>
           </Grid>
+
           <ControlTemplate.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
               <Setter TargetName="GlowRing" Property="Opacity" Value="1" />
             </Trigger>
             <Trigger Property="IsPressed" Value="True">
-              <Setter TargetName="BtnFace" Property="Width"  Value="132" />
-              <Setter TargetName="BtnFace" Property="Height" Value="132" />
+              <Setter TargetName="Ring" Property="Width"  Value="132" />
+              <Setter TargetName="Ring" Property="Height" Value="132" />
             </Trigger>
           </ControlTemplate.Triggers>
         </ControlTemplate>
@@ -201,11 +237,11 @@
        DARK COMBO BOX
   ══════════════════════════════════════════════════════ -->
   <Style x:Key="DarkComboBox" TargetType="ComboBox">
-    <Setter Property="Background"      Value="#FF1E1E38" />
+    <Setter Property="Background"      Value="#FF181818" />
     <Setter Property="Foreground"      Value="{StaticResource BrushTextPrimary}" />
     <Setter Property="BorderBrush"     Value="{StaticResource BrushBorder}" />
     <Setter Property="BorderThickness" Value="1" />
-    <Setter Property="Height"          Value="32" />
+    <Setter Property="Height"          Value="30" />
     <Setter Property="Padding"         Value="10,4" />
     <Setter Property="FontFamily"      Value="{StaticResource FontUI}" />
     <Setter Property="FontSize"        Value="12" />
@@ -218,42 +254,52 @@
                     Background="{TemplateBinding Background}"
                     BorderBrush="{TemplateBinding BorderBrush}"
                     BorderThickness="{TemplateBinding BorderThickness}"
-                    CornerRadius="8">
+                    CornerRadius="6">
               <Grid>
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="28" />
+                  <ColumnDefinition Width="26" />
                 </Grid.ColumnDefinitions>
                 <ContentPresenter Grid.Column="0"
                                   Content="{TemplateBinding SelectionBoxItem}"
                                   Margin="10,0,0,0"
                                   VerticalAlignment="Center" />
                 <TextBlock Grid.Column="1" Text="▾"
-                           Foreground="{StaticResource BrushTextSecondary}"
+                           Foreground="{StaticResource BrushTextMuted}"
                            VerticalAlignment="Center"
-                           HorizontalAlignment="Center" />
+                           HorizontalAlignment="Center"
+                           FontSize="11" />
                 <Popup x:Name="PART_Popup"
                        Grid.Column="0"
                        IsOpen="{TemplateBinding IsDropDownOpen}"
                        Placement="Bottom"
                        AllowsTransparency="True">
-                  <Border Background="#FF1E1E38"
+                  <Border Background="#FF1A1A1A"
                           BorderBrush="{StaticResource BrushBorder}"
-                          BorderThickness="1" CornerRadius="8" Margin="0,2,0,0">
-                    <ScrollViewer MaxHeight="200">
+                          BorderThickness="1" CornerRadius="6" Margin="0,3,0,0">
+                    <Border.Effect>
+                      <DropShadowEffect Color="#FF000000" BlurRadius="16"
+                                        ShadowDepth="4" Opacity="0.6" />
+                    </Border.Effect>
+                    <ScrollViewer MaxHeight="180">
                       <ItemsPresenter />
                     </ScrollViewer>
                   </Border>
                 </Popup>
               </Grid>
             </Border>
-            <ToggleButton Grid.Column="0"
-                          IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
-                          Opacity="0" IsHitTestVisible="True" />
+            <ToggleButton
+              IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+              Opacity="0" IsHitTestVisible="True" />
           </Grid>
           <ControlTemplate.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-              <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource BrushAccent}" />
+              <Setter TargetName="Bd" Property="BorderBrush"
+                      Value="{StaticResource BrushBorderHover}" />
+            </Trigger>
+            <Trigger Property="IsDropDownOpen" Value="True">
+              <Setter TargetName="Bd" Property="BorderBrush"
+                      Value="{StaticResource BrushTextSecondary}" />
             </Trigger>
           </ControlTemplate.Triggers>
         </ControlTemplate>
@@ -264,16 +310,16 @@
         <Style TargetType="ComboBoxItem">
           <Setter Property="Background"  Value="Transparent" />
           <Setter Property="Foreground"  Value="{StaticResource BrushTextPrimary}" />
-          <Setter Property="Padding"     Value="10,6" />
+          <Setter Property="Padding"     Value="10,7" />
           <Setter Property="FontFamily"  Value="{StaticResource FontUI}" />
           <Setter Property="FontSize"    Value="12" />
           <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-              <Setter Property="Background" Value="#22FFFFFF" />
+              <Setter Property="Background" Value="#FF242424" />
             </Trigger>
             <Trigger Property="IsSelected" Value="True">
-              <Setter Property="Background" Value="#334FC3F7" />
-              <Setter Property="Foreground" Value="{StaticResource BrushAccent}" />
+              <Setter Property="Background" Value="#FF242424" />
+              <Setter Property="Foreground" Value="{StaticResource BrushTextPrimary}" />
             </Trigger>
           </Style.Triggers>
         </Style>
@@ -282,27 +328,27 @@
   </Style>
 
   <!-- ══════════════════════════════════════════════════════
-       GHOST ICON BUTTON  (GitHub link)
+       GHOST ICON BUTTON
   ══════════════════════════════════════════════════════ -->
   <Style x:Key="GhostIconButton" TargetType="Button">
     <Setter Property="Background"      Value="Transparent" />
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="Cursor"          Value="Hand" />
-    <Setter Property="Padding"         Value="8,4" />
+    <Setter Property="Padding"         Value="8,5" />
     <Setter Property="FontFamily"      Value="{StaticResource FontUI}" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="Button">
           <Border x:Name="Bd" Background="{TemplateBinding Background}"
-                  CornerRadius="6" Padding="{TemplateBinding Padding}">
+                  CornerRadius="5" Padding="{TemplateBinding Padding}">
             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
           </Border>
           <ControlTemplate.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-              <Setter TargetName="Bd" Property="Background" Value="#1AFFFFFF" />
+              <Setter TargetName="Bd" Property="Background" Value="#FF1E1E1E" />
             </Trigger>
             <Trigger Property="IsPressed" Value="True">
-              <Setter TargetName="Bd" Property="Background" Value="#33FFFFFF" />
+              <Setter TargetName="Bd" Property="Background" Value="#FF282828" />
             </Trigger>
           </ControlTemplate.Triggers>
         </ControlTemplate>
@@ -314,8 +360,8 @@
        STATUS DOT
   ══════════════════════════════════════════════════════ -->
   <Style x:Key="StatusDot" TargetType="Ellipse">
-    <Setter Property="Width"            Value="10" />
-    <Setter Property="Height"           Value="10" />
+    <Setter Property="Width"             Value="8" />
+    <Setter Property="Height"            Value="8" />
     <Setter Property="VerticalAlignment" Value="Center" />
   </Style>
 
