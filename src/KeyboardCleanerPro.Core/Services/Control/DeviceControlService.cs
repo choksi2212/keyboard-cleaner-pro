@@ -34,10 +34,14 @@ public sealed class DeviceControlService : IDeviceControlService
     {
         ArgumentException.ThrowIfNullOrEmpty(deviceInstanceId);
 
-        var classGuid = NativeConstants.GUID_DEVCLASS_KEYBOARD;
-
+        // Use DIGCF_ALLCLASSES (no GUID, no DIGCF_PRESENT) so we enumerate
+        // ALL devices including currently-disabled ones. A disabled keyboard
+        // won't appear with DIGCF_PRESENT so re-enable would always fail.
         IntPtr deviceInfoSet = SetupApiNative.SetupDiGetClassDevs(
-            ref classGuid, null, IntPtr.Zero, NativeConstants.DIGCF_PRESENT);
+            IntPtr.Zero,
+            null,
+            IntPtr.Zero,
+            NativeConstants.DIGCF_ALLCLASSES);
 
         if (deviceInfoSet == new IntPtr(-1))
         {

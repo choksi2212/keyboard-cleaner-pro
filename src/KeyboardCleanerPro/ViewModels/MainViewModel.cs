@@ -223,8 +223,11 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
         {
             // Roll back persisted state since disable failed
             _stateManager.ClearState();
-            ErrorMessage = $"Could not lock keyboard: {result.ErrorMessage}";
+            string msg = $"Could not lock keyboard:\n{result.ErrorMessage}";
+            ErrorMessage = msg;
             SetState(AppState.KeyboardEnabled);
+            MessageBox.Show(msg, "Keyboard Cleaner Pro — Error",
+                MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -249,9 +252,12 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
         }
         else
         {
-            ErrorMessage = $"Could not unlock keyboard: {result.ErrorMessage}";
+            string msg = $"Could not unlock keyboard:\n{result.ErrorMessage}";
+            ErrorMessage = msg;
             // Keyboard may still be disabled — stay in disabled state so user can retry
             SetState(AppState.KeyboardDisabled);
+            MessageBox.Show(msg, "Keyboard Cleaner Pro — Error",
+                MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
         RemainingTime = null;

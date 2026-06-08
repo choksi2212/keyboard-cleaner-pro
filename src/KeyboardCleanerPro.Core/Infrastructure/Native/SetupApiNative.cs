@@ -18,6 +18,17 @@ internal static class SetupApiNative
         IntPtr     hwndParent,
         uint       flags);
 
+    /// <summary>
+    /// Overload used when classGuid is null (DIGCF_ALLCLASSES). Pass IntPtr.Zero for classGuid.
+    /// </summary>
+    [DllImport(SetupApiLib, SetLastError = true, CharSet = CharSet.Auto,
+               EntryPoint = "SetupDiGetClassDevsW")]
+    public static extern IntPtr SetupDiGetClassDevs(
+        IntPtr     classGuid,
+        string?    enumerator,
+        IntPtr     hwndParent,
+        uint       flags);
+
     /// <summary>Enumerates devices in an information set by sequential index.</summary>
     [DllImport(SetupApiLib, SetLastError = true)]
     public static extern bool SetupDiEnumDeviceInfo(

@@ -101,7 +101,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="Button">
-          <Grid>
+          <Grid Background="Transparent">
             <!-- Outer glow — green, soft -->
             <Ellipse x:Name="GlowRing" Width="152" Height="152" Opacity="0">
               <Ellipse.Fill>
@@ -177,7 +177,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="Button">
-          <Grid>
+          <Grid Background="Transparent">
             <!-- Outer glow — red -->
             <Ellipse x:Name="GlowRing" Width="152" Height="152" Opacity="0.7">
               <Ellipse.Fill>
