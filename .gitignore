@@ -31,7 +31,6 @@ _ReSharper*/
 packages/
 project.lock.json
 project.fragment.lock.json
-artifacts/
 
 ## OS files
 .DS_Store
@@ -43,10 +42,16 @@ coverage/
 *.trx
 *.coveragexml
 
-## Publish output (all versioned publish folders)
+## Publish / distribution outputs — built from source, not committed
 publish/
 publish-*/
+dist/
 
-## Installer build artifacts (source .wxs stays, binaries don't)
+## Installer build artifacts — only source (.wxs) is committed, not the binaries
 installer/*.msi
 installer/*.wixpdb
+installer/*.wixobj
+
+## Internal — not part of the public repo
+tests/
+spec.md
