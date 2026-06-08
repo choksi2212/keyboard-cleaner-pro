@@ -8,8 +8,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>KeyboardCleanerPro</RootNamespace>
     <AssemblyName>KeyboardCleanerPro</AssemblyName>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0.0.0</FileVersion>
+    <AssemblyVersion>1.0.1.0</AssemblyVersion>
+    <FileVersion>1.0.1.0</FileVersion>
+    <ApplicationIcon>Resources\logo.ico</ApplicationIcon>
     <Product>Keyboard Cleaner Pro</Product>
     <Company>Manas Choksi</Company>
     <Copyright>Copyright © 2025 Manas Choksi</Copyright>
@@ -27,9 +28,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- App icon (taskbar, Alt+Tab, window chrome) -->
+    <!-- App icon (taskbar, Alt+Tab, window chrome, Explorer, Start Menu) -->
     <ApplicationDefinition Update="App.xaml" />
     <Resource Include="Resources\logo.png" />
+    <Resource Include="Resources\logo.ico" />
   </ItemGroup>
 
 </Project>

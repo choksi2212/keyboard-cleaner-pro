@@ -13,12 +13,15 @@
 
   <Package Name="Keyboard Cleaner Pro"
            Manufacturer="Manas Choksi"
-           Version="1.0.0.0"
+           Version="1.0.1.0"
            UpgradeCode="A1B2C3D4-CAFE-BEEF-DEAD-000000000001"
            Language="1033"
            Codepage="1252"
            InstallerVersion="500"
            Scope="perMachine">
+
+    <!-- Application icon — used for Add/Remove Programs entry -->
+    <Icon Id="AppIcon" SourceFile="logo.ico" />
 
     <!-- Allow major upgrades (uninstall old, install new) -->
     <MajorUpgrade DowngradeErrorMessage="A newer version of Keyboard Cleaner Pro is already installed." />
@@ -62,7 +65,8 @@
                   Name="Keyboard Cleaner Pro"
                   Description="Lock your laptop keyboard while cleaning it"
                   Target="[INSTALLFOLDER]KeyboardCleanerPro.exe"
-                  WorkingDirectory="INSTALLFOLDER" />
+                  WorkingDirectory="INSTALLFOLDER"
+                  Icon="AppIcon" />
         <RemoveFolder Id="RemoveApplicationProgramsFolder"
                       Directory="ApplicationProgramsFolder"
                       On="uninstall" />
@@ -80,7 +84,8 @@
                   Name="Keyboard Cleaner Pro"
                   Description="Lock your laptop keyboard while cleaning it"
                   Target="[INSTALLFOLDER]KeyboardCleanerPro.exe"
-                  WorkingDirectory="INSTALLFOLDER" />
+                  WorkingDirectory="INSTALLFOLDER"
+                  Icon="AppIcon" />
         <RegistryValue Root="HKCU"
                        Key="Software\ManasChoksi\KeyboardCleanerPro"
                        Name="DesktopShortcut"
